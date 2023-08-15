@@ -40,14 +40,16 @@ const Seats = ({ socket }) => {
 
   useEffect(()=>{
     let paramsData = {
-      accessCode:"12Cy34",
-      showTimeId:"showtime1"
+      accessCode:"1234V2",
+      showTimeId:"60606060"
     }
+    // accessCode:"12Cy34",
+    // showTimeId:"showtime1"
 seats(paramsData).then((data)=>{
-  console.log("This is the fetched data",data[0].seatPlan)
+  console.log("This is the fetched data",data[0])
   // seatNumbers = data[0].seatPlan
   setSeatNumbers(data[0].seatPlan)
-  console.log(seatNumbers)
+  // console.log(seatNumbers)
 })
   },[])
 
@@ -107,7 +109,7 @@ seats(paramsData).then((data)=>{
 
   const checkAvailability = async(data)=>{
 
-    console.log(data,"This is the data bieng passed to the each seat components CHECK AVAILABILITY FUNCTION")
+    // console.log(data,"This is the data bieng passed to the each seat components CHECK AVAILABILITY FUNCTION")
     if(newMessage.length <= 0){
       return false
     }
@@ -122,29 +124,42 @@ seats(paramsData).then((data)=>{
       // if(newMessage[i].content.seatId == data.seatId){
       if(newMessage[i].content.seatId == data.seatNumber){
         // data.onHold = newMessage[i].content.onHold
-        data.isHold = newMessage[i].content.isHold
+        // console.log(seatNumbers,"+++++++++++++++++++++++++++")
+        data.isHold = newMessage[i].content.onHold
+        // console.log(seatNumbers,"+++++++++++++++++++++++++++")
         // console.log(data.seatId,data.tempId,data.canUnhold,"-----------TEMP ID--------------",data.tempId.length)
         // console.log( bcrypt.compare(userId,data.tempId))
         // console.log(newMessage[i].content.tempId,userId,data,"This is the comparison of incoming user id and current user id")
-        console.log(newMessage[i].content.tempId,userId,data,"This is the comparison of incoming user id and current user id")
+        // console.log(newMessage[i].content.tempId,userId,data,"This is the comparison of incoming user id and current user id")
         let authorized;
         // let authorized = await bcrypt.compare(userId,newMessage[i].content.tempId)
+        // console.log(newMessage[i].content.tempId,userId,newMessage[i].content.tempId == userId,"USER ID TEMP ID TEST")
+        
+        console.log("payload id",newMessage[i].content.tempId,"current id",userId)
         if(newMessage[i].content.tempId.length <= 0){
           authorized = false
-        }else if(newMessage[i].content.tempId == userId){
+          data.isCanUnHold = false
+        }
+        if(newMessage[i].content.tempId == userId){
           authorized = true
+          data.isCanUnHold = true
         }else{
           authorized = false
+          data.isCanUnHold = false
         }
-        // console.log(authorized,"This is the authorized return after comapring password.")
-        if(authorized){
-          // data.canUnhold = true
-          data.isCanUnhold = true
-        }else{
+        console.log(authorized,"Authorized...",data.isCanHold,"can unhold")
+        // console.log(authorized,"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.",data.isCanUnhold,"currentTempId",data.tempId,"payloadTempId",newMessage[i].content.tempId,"userId",userId)
+        // if(authorized){
+        //   // data.canUnhold = true
+        //   data.isCanUnhold = true
+        // }else{
 
-          // data.canUnhold = newMessage[i].content.canUnhold
-          data.isCanUnhold = newMessage[i].content.isCanUnhold
-        }
+        //   // data.canUnhold = newMessage[i].content.canUnhold
+        //   data.isCanUnhold = false
+        //   // data.isCanUnhold = newMessage[i].content.canUnhold
+        // }
+        console.log(authorized,"Authorized...",data.isCanHold,"can unhold")
+        // console.log(authorized,"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.",data.isCanUnhold,"currentTempId",data.tempId,"payloadTempId",newMessage[i].content.tempId,"userId",userId)
         // data.onHold = true
       }
 // console.log("This is the data",data)
@@ -161,27 +176,30 @@ useEffect(() => {
     // console.log(newMessage[i])
     // onHoldseets.append(newMessage[i].content.seat)
   // }
-  console.log(seatNumbers,"All messaages after recieving payload")
-  console.log(newMessage,"All the new payloads array")
+  // console.log(seatNumbers,"All messaages after recieving payload")
+  // console.log(newMessage,"All the new payloads array")
   
 }, [newMessage])
 // console.log( onHoldseets)
 
 
 const seatOnHold = async(data)=>{
-  console.log(data, "This is from seat unhold-----------------")
+  // console.log(data, "This is from seat unhold-----------------")
   // console.log(data.onHold,data.canUnhold,data,userId, "This is from seat unhold-----------------")
 
 
   // if(data.onHold && data.canUnhold == false){
-  if(data.isHold && data.isCanHold == false){
+    // console.log(data.isHold,data.isCanHold,data.isHold && data.isCanHold == false,"ALERT")
+  if(data.isHold && data.isCanUnHold == false){
     alert("This seat is currently on hold by other user.Please check later whether its available..")
     return;
   }
   // console.log(userId,"------------------------------------------------------this is the USER ID")
 let userKey = await bcrypt.hash(userId,2)
   // data.onHold = !data.onHold
+  // console.log(data,"-----------------------")
   data.isHold = !data.isHold
+  // console.log(data,"-----------------------")
   let tempPayload = {
     "accessCode": 123,
     "showTimeId":456,
@@ -209,29 +227,6 @@ let userKey = await bcrypt.hash(userId,2)
 
 
 
-  // useEffect(() => {
-  //   console.log("seats", socket);
-  //   socket.on("booking", (newBooking) => {
-  //     console.log("newBooking:", newBooking);
-  //     setBookings((prevBookings) => {
-  //       if (prevBookings.includes(newBooking)) {
-  //         return prevBookings.filter((booking) => booking !== newBooking);
-  //       } else {
-  //         return [...prevBookings, newBooking];
-  //       }
-  //     });
-  //   });
-
-  //   socket.on("new", (data) => {
-  //     console.log("data:");
-  //   });
-
-  //   socket.on("initialBookings", (initialBookings) => {
-  //     console.log("initialBookings:", initialBookings);
-  //     setSelectedSeats(initialBookings);
-  //     setBookings(initialBookings);
-  //   });
-  // }, []);
 
   useEffect(() => {
     // console.log(bookings);
@@ -291,8 +286,8 @@ let userKey = await bcrypt.hash(userId,2)
         }
           {
             seatNumbers && seatNumbers.map((seatNumber,index)=>{
-              console.log(seatNumber.seatNumber,"???????????????//")
-              console.log(checkAvailability(seatNumber))
+              // console.log(seatNumber.seatNumber,"???????????????//")
+              checkAvailability(seatNumber)
               // console.log(seatNumber.onHold)
               return <div key={index} style={{background:
                 seatNumber.isHold ? "red":"green"}} onClick={()=>seatOnHold(seatNumber)}><h2>{seatNumber.seatNumber}</h2></div>

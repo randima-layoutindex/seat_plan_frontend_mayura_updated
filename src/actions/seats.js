@@ -1,7 +1,8 @@
 
 import axios from "axios";
 export const seats = (paramsData) => {
-    let url = "http://127.0.0.1:3000/organizations/finOneByParams?accessCode=12Cy34&showTimeId=showtime1";
+    let url = "http://127.0.0.1:3000/organizations/finOneByParams";
+    console.log(paramsData.accessCode,paramsData.showTimeId)
   
     return axios(url, {
       method: "GET",
