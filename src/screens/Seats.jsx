@@ -61,11 +61,23 @@ seats(paramsData).then((data)=>{
 
   useEffect(() => {
     socket1.emit("join", values)
-    socket1.on("onMessage", (response) => {
-      console.log(response, "Recieved Payload")
+    // socket1.on("onMessage", (response) => {
+    //   console.log(response, "Recieved Payload")
+    //   setNewMessage((currentMsgs) => [...currentMsgs, response])
+    // })
+    socket1.on("onJoin", (response) => {
+      console.log(response, "ON JOIN PAYLOAD")
       setNewMessage((currentMsgs) => [...currentMsgs, response])
     })
   }, [])
+
+  useEffect(()=>{
+    socket1.on("onJoin", (response) => {
+      console.log(response, "ON JOIN PAYLOAD")
+      setNewMessage(response)
+      console.log(newMessage,"AFTER ON JOIN PAYLOAD")
+    })
+  },[socket1])
 
   useEffect(() => {
     socket1.on("onMessage", (response) => {
@@ -73,30 +85,35 @@ seats(paramsData).then((data)=>{
       setNewMessage((currentMsgs) => [...currentMsgs, response])
     })
 
+
    
   }, [socket1])
 
   let onHoldseets = []
 
   const checkAvailability = async(data)=>{
-    console.log(newMessage[1],"THIS IS THE FROM CHECK AVAILABILITY FUNCTION..")
 
+    // console.log(newMessage[0].content,"THIS IS FROM CHECK AVAILABILITY FUNCTION")
+    
     if(newMessage.length <= 0){
       return false
     }
     let availability = true
     for(let i = 0;i<newMessage.length;i++){
-      availability =  newMessage[i].content.seatId == data.seatNumber
-      if(newMessage[i].content.seatId == data.seatNumber){
-        data.isHold = newMessage[i].content.onHold
+      console.log(newMessage[i].seatId,"INSIDE check availability FUNCTIOn")
+      // console.log(newMessage[i],data,"THIS IS THE FROM CHECK AVAILABILITY FUNCTION..")
+      // console.log(newMessage[i].content,"THIS IS THE FROM CHECK AVAILABILITY FUNCTION..")
+      availability =  newMessage[i].seatId == data.seatNumber
+      if(newMessage[i].seatId == data.seatNumber){
+        data.isHold = newMessage[i].onHold
         let authorized;
         
-        console.log("payload id",newMessage[i].content.tempId,"current id",userId)
-        if(newMessage[i].content.tempId.length <= 0){
+        console.log("payload id",newMessage[i].tempId,"current id",userId)
+        if(newMessage[i].tempId.length <= 0){
           authorized = false
           data.isCanUnHold = false
         }
-        if(newMessage[i].content.tempId == userId){
+        if(newMessage[i].tempId == userId){
           authorized = true
           data.isCanUnHold = true
         }else{
@@ -200,6 +217,10 @@ let userKey = await bcrypt.hash(userId,2)
           alignItems="center"
         >{
           seatNumbers && console.log(seatNumbers,"from the map functions ")
+        
+        }
+        {
+          newMessage && console.log(newMessage,"NEW MESSAGES FROM THE MAP FUNCTIONS")
         }
           {
             seatNumbers && seatNumbers.map((seatNumber,index)=>{
