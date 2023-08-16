@@ -7,8 +7,8 @@ import { Button, Typography } from "@mui/material";
 import io from 'socket.io-client'
 import generateUniqueId from "generate-unique-id";
 import bcrypt from "bcryptjs"
-import axios from "axios"
 import {seats} from "../actions/seats"
+import moment from "moment"
 
 const userId = generateUniqueId()
 
@@ -44,8 +44,6 @@ seats(paramsData).then((data)=>{
   let showTimeText = "";
 
   const [values, setValues] = useState({
-    // accessCode: 123,
-    // showTimeId: 456
     accessCode:"1234V2",
     showTimeId:"60606060"
   })
@@ -61,10 +59,7 @@ seats(paramsData).then((data)=>{
 
   useEffect(() => {
     socket1.emit("join", values)
-    // socket1.on("onMessage", (response) => {
-    //   console.log(response, "Recieved Payload")
-    //   setNewMessage((currentMsgs) => [...currentMsgs, response])
-    // })
+
     socket1.on("onJoin", (response) => {
       console.log(response, "ON JOIN PAYLOAD")
       setNewMessage((currentMsgs) => [...currentMsgs, response])
@@ -84,35 +79,58 @@ seats(paramsData).then((data)=>{
       console.log(response, "Recieved Payload")
       setNewMessage((currentMsgs) => [...currentMsgs, response])
     })
-
-
-   
   }, [socket1])
 
-  let onHoldseets = []
+  const timeCheck = (date)=>{
+// Get the current international date
+let currentDate = new Date().toISOString();
+
+// Given another date in international date format
+let anotherDate = date; // Example date
+
+// Convert the given date to a Date object
+let parsedDate = new Date(anotherDate);
+
+// Add 10 minutes to the parsed date
+parsedDate.setMinutes(parsedDate.getMinutes() + 10);
+
+// Check if the modified date is greater than the current date
+let isGreater = parsedDate < new Date(currentDate);
+
+return isGreater
+  }
+
 
   const checkAvailability = async(data)=>{
 
-    // console.log(newMessage[0].content,"THIS IS FROM CHECK AVAILABILITY FUNCTION")
+    // console.log(moment(newMessage[0].updatedAt),"CHECK AVAILABILITY")
+    // console.log(moment(newMessage[0].updatedAt).add(10,"m").date(),"CHECK AVAILABILITY")
+    // console
+    // console.log(timeCheck(newMessage[0].updatedAt),"CHECK AVAILABILITY")
     
     if(newMessage.length <= 0){
       return false
     }
     let availability = true
     for(let i = 0;i<newMessage.length;i++){
-      console.log(newMessage[i].seatId,"INSIDE check availability FUNCTIOn")
-      // console.log(newMessage[i],data,"THIS IS THE FROM CHECK AVAILABILITY FUNCTION..")
-      // console.log(newMessage[i].content,"THIS IS THE FROM CHECK AVAILABILITY FUNCTION..")
+      // console.log(timeCheck(newMessage[i].updatedAt),"CHECK AVAILABILITY")
       availability =  newMessage[i].seatId == data.seatNumber
       if(newMessage[i].seatId == data.seatNumber){
         data.isHold = newMessage[i].onHold
         let authorized;
-        
-        console.log("payload id",newMessage[i].tempId,"current id",userId)
         if(newMessage[i].tempId.length <= 0){
           authorized = false
           data.isCanUnHold = false
         }
+
+        // let isSameUser = await bcrypt.has(userId,2)
+        // if(isSameUser == newMessage[i].tempId){
+        //   authorized = true
+        //   data.isCanUnHold = true
+        // }else{
+        //   authorized = false
+        //   data.isCanUnHold = false
+        // }
         if(newMessage[i].tempId == userId){
           authorized = true
           data.isCanUnHold = true
@@ -120,8 +138,13 @@ seats(paramsData).then((data)=>{
           authorized = false
           data.isCanUnHold = false
         }
-        console.log(authorized,"Authorized...",data.isCanHold,"can unhold")
-        console.log(authorized,"Authorized...",data.isCanHold,"can unhold")
+
+        if(timeCheck(newMessage[i].updatedAt)){
+          authorized = true
+          data.isCanUnHold = true
+        }
+
+
 
       }
 
@@ -134,13 +157,15 @@ useEffect(() => {
 
 
 const seatOnHold = async(data)=>{
+  console.log(data.isCanUnHold,"CAN UNHOLD.........")
   if(data.isHold && data.isCanUnHold == false){
     alert("This seat is currently on hold by other user.Please check later whether its available..")
     return;
   }
-let userKey = await bcrypt.hash(userId,2)
 
   data.isHold = !data.isHold
+
+  
 
   let tempPayload = {
     "accessCode": values.accessCode,
@@ -150,6 +175,7 @@ let userKey = await bcrypt.hash(userId,2)
         "onHold":data.isHold,
    
         "canUnhold":false,
+  
         "tempId":userId
    
     }
@@ -167,11 +193,11 @@ let userKey = await bcrypt.hash(userId,2)
     setSelectedSeats(bookings);
   }, [bookings]);
 
-  const sendBooking = (message) => {
-    // console.log(message);
-    socket.emit("booking", message);
-    setBooking("");
-  };
+  // const sendBooking = (message) => {
+  //   // console.log(message);
+  //   socket.emit("booking", message);
+  //   setBooking("");
+  // };
 
   return (
     <Box sx={{ flexGrow: 1, height: "100%" }}>
@@ -215,13 +241,14 @@ let userKey = await bcrypt.hash(userId,2)
           rowSpacing={4}
           justifyContent="center"
           alignItems="center"
-        >{
+        >
+          {/* {
           seatNumbers && console.log(seatNumbers,"from the map functions ")
         
         }
         {
           newMessage && console.log(newMessage,"NEW MESSAGES FROM THE MAP FUNCTIONS")
-        }
+        } */}
           {
             seatNumbers && seatNumbers.map((seatNumber,index)=>{
     
