@@ -142,6 +142,9 @@ return isGreater
         if(timeCheck(newMessage[i].updatedAt)){
           authorized = true
           data.isCanUnHold = true
+          data.onHold = false
+          data.tempId = ""
+          data.isHold = false
         }
 
 
