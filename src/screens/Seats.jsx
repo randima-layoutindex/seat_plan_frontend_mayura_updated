@@ -25,7 +25,7 @@ const Seats = () => {
     }
 
 seats(paramsData).then((data)=>{
-  console.log("This is the fetched data",data[0])
+  console.log("This is   the fetched data",data[0])
 
   setSeatNumbers(data[0].seatPlan)
 
