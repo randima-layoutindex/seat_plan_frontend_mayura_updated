@@ -1,28 +1,27 @@
 import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import Seat from "../components/Seat";
 import { useLocation } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
 import io from 'socket.io-client'
 import generateUniqueId from "generate-unique-id";
 import bcrypt from "bcryptjs"
 import {seats} from "../actions/seats"
-import moment from "moment"
 
 const userId = generateUniqueId()
 
 
 const socket1 = io.connect("http://localhost:3000")
 
-const Seats = ({ socket }) => {
+const Seats = () => {
   const [seatNumbers,setSeatNumbers]=useState()
 
 
   useEffect(()=>{
     let paramsData = {
       accessCode:"1234V2",
-      showTimeId:"60606060"
+      showTimeId:"60606060",
+      name:"Rio Cinema"
     }
 
 seats(paramsData).then((data)=>{
@@ -33,7 +32,7 @@ seats(paramsData).then((data)=>{
 })
   },[])
 
-  const [booking, setBooking] = useState("");
+
   const [bookings, setBookings] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
 
@@ -179,10 +178,12 @@ const seatOnHold = async(data)=>{
    
         "canUnhold":false,
   
-        "tempId":userId
+        "tempId":userId,
+        "id":`${values.accessCode}-${values.showTimeId}-${data.seatNumber}`
    
     }
 }
+
   socket1.emit("newMessage",tempPayload)
 
 }
